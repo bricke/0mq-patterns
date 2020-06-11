@@ -2,10 +2,8 @@
 #define CLIENT_H
 
 #include <QObject>
-#include <QPointer>
 #include <QByteArray>
 #include <QString>
-#include <zmq.h>
 
 class Client : public QObject
 {

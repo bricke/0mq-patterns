@@ -1,4 +1,5 @@
 #include "server.h"
+#include <zmq.h>
 #include <QDebug>
 
 Server::Server(QObject *parent) : QObject(parent)

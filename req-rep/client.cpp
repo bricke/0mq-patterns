@@ -1,4 +1,5 @@
 #include "client.h"
+#include <zmq.h>
 #include <QDebug>
 
 Client::Client(QObject *parent) : QObject(parent)

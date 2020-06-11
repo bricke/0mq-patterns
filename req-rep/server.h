@@ -2,10 +2,7 @@
 #define SERVER_H
 
 #include <QObject>
-#include <QPointer>
-#include <QByteArray>
 #include <QString>
-#include <zmq.h>
 
 class Server : public QObject
 {
