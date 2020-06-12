@@ -1,9 +1,9 @@
 #include <QCoreApplication>
 #include <QThread>
+#include <QDebug>
 
 #include <client.h>
 #include <server.h>
-#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     QThread *workerSrv = new QThread();
     srv->moveToThread(workerSrv);
 
-    QObject::connect(workerSrv, &QThread::started, srv, [=](){
+    QObject::connect(workerSrv, &QThread::started, [=](){
         srv->listen("tcp://*:5555");
     });
     workerSrv->start();
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     QThread *workerClt = new QThread();
     clt->moveToThread(workerClt);
 
-    QObject::connect(workerClt, &QThread::started, clt, [=](){
+    QObject::connect(workerClt, &QThread::started, [=](){
         qDebug() << "Client:" << "HELLO"
                  << "Server:" << clt->sendRequest("tcp://localhost:5555", "HELLO");
         qDebug() << "Client:" << "What's up?"
