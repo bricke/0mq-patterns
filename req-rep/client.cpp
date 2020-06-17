@@ -29,6 +29,7 @@ QByteArray Client::sendRequest(const QString server, const QByteArray data)
     QByteArray response;
     response.reserve(1000);
     int bytes = zmq_recv (req, response.data(), 1000, 0);
+    zmq_disconnect(req, server.toLatin1().data());
     response.resize(bytes);
     return response;
 }

@@ -70,5 +70,4 @@ QByteArray Subscriber::readAll(void *socket)
         }
     }
     return ret;
-
 }
