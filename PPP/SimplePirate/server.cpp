@@ -32,7 +32,7 @@ void Server::listen(const QString address)
         return;
     }
 
-    zmq_send (req, "noAddr", 6, ZMQ_SNDMORE);
+//    zmq_send (req, "noAddr", 6, ZMQ_SNDMORE);
     zmq_send(req, "READY", 5, 0);
 
     qsrand((qulonglong) req);
@@ -42,17 +42,17 @@ void Server::listen(const QString address)
         //Blocking
         zmq_poll(items, 1, -1);
         if (items[0].revents & ZMQ_POLLIN) {
-            QByteArray input = readAll(req);
+            QList<QByteArray> input = readAll(req);
 
-            QString tmp = QString(input).split("-Client").first();
-            tmp.append("-Client");
-            QByteArray address(tmp.toLatin1());
+            if (input.size() != 2) continue;
+
+            QByteArray address = input.first();
 
             sHappens = qrand() % 100;
 
             if (sHappens % 10 == 0) {
                 // sleep 2 seconds before sending a response
-                usleep(2 * 1000 * 1000);
+                usleep(1 * 1000 * 1000);
                 zmq_send (req, address.data(),
                           static_cast<size_t>(address.size()), ZMQ_SNDMORE);
                 zmq_send (req, "World...busy!", 13, 0);
@@ -70,9 +70,9 @@ void Server::listen(const QString address)
     }
 }
 
-QByteArray Server::readAll(void *socket)
+QList<QByteArray> Server::readAll(void *socket)
 {
-    QByteArray ret;
+    QList<QByteArray> ret;
     forever {
         //  Process all parts of the message
         zmq_msg_t message;
@@ -80,7 +80,7 @@ QByteArray Server::readAll(void *socket)
         int size = zmq_msg_recv(&message, socket, 0);
 
         //  Dump the message byte array
-        ret.append(static_cast<char*>(zmq_msg_data(&message)), size);
+        ret.append(QByteArray(static_cast<char*>(zmq_msg_data(&message)), size));
         zmq_msg_close(&message);
 
         //  Multipart detection

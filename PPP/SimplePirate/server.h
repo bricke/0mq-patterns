@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QList>
+#include <QByteArray>
 #include <zmq.h>
 
 class Server : public QObject
@@ -21,8 +23,8 @@ private:
     void *context;
     void *req;
     QByteArray identity;
-    QByteArray readAll(void *socket);
     zmq_pollitem_t items[1];
+    QList<QByteArray> readAll(void *socket);
 };
 
 #endif // SERVER_H
