@@ -43,7 +43,6 @@ void Queue::start()
         // Message returning from a worker
         if (items [0].revents & ZMQ_POLLIN) {
             //Reading the worker response
-
             QByteArray workerAddress = readOne(backend);
             QByteArray empty = readOne(backend);
             Q_UNUSED(empty);
@@ -51,14 +50,19 @@ void Queue::start()
             QByteArray message = readOne(backend);
 
             workerQueue.enqueue(workerAddress);
-            qDebug() << "Worker" << workerAddress << "back in queue, queue size" << workerQueue.size();
+            qDebug() << "\tWorker" << workerAddress
+                     << "back in queue, queue size"
+                     << workerQueue.size();
 
             //  Return reply to client if it's not a READY
             if (QString(message).compare("READY", Qt::CaseInsensitive) != 0) {
-                zmq_send(frontend, clientAddress.data(), static_cast<size_t>(clientAddress.size()), ZMQ_SNDMORE);
+                zmq_send(frontend, clientAddress.data(),
+                         static_cast<size_t>(clientAddress.size()), ZMQ_SNDMORE);
                 zmq_send(frontend, NULL, 0, ZMQ_SNDMORE);
-                zmq_send(frontend, message.data(), static_cast<size_t>(message.size()), 0);
-                qDebug() << "\tResponse for" << clientAddress<< "from Worker" << workerAddress;
+                zmq_send(frontend, message.data(),
+                         static_cast<size_t>(message.size()), 0);
+                qDebug() << "\tResponse for" << clientAddress
+                         << "from Worker" << workerAddress;
             }
          }
 
@@ -71,10 +75,13 @@ void Queue::start()
 
             //Forwarding message to backend
             QByteArray to = workerQueue.dequeue();
-            zmq_send(backend, to.data(), static_cast<size_t>(to.size()), ZMQ_SNDMORE);
+            zmq_send(backend, to.data(),
+                     static_cast<size_t>(to.size()), ZMQ_SNDMORE);
             zmq_send(backend, NULL, 0, ZMQ_SNDMORE);
-            zmq_send(backend, address.data(), static_cast<size_t>(to.size()), ZMQ_SNDMORE);
-            zmq_send(backend, message.data(), static_cast<size_t>(message.size()), 0);
+            zmq_send(backend, address.data(),
+                     static_cast<size_t>(to.size()), ZMQ_SNDMORE);
+            zmq_send(backend, message.data(),
+                     static_cast<size_t>(message.size()), 0);
             qDebug() << "\tForwarding"<< address << "to" << to;
         }
     }

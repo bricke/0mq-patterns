@@ -15,13 +15,14 @@ Client::~Client()
 }
 
 //Blocking with timeout!
-QByteArray Client::sendRequest(const QString server, const QByteArray data, int retries)
+QByteArray Client::sendRequest(const QString server,
+                               const QByteArray data,
+                               int retries)
 {
     req = zmq_socket(context, ZMQ_REQ);
-    srand((qulonglong)req);
-    QByteArray id = QStringLiteral("%1-Client").arg(rand()).toLocal8Bit();
+    qsrand((qulonglong)req);
+    QByteArray id = QStringLiteral("%1-Client").arg(qrand()).toLocal8Bit();
     zmq_setsockopt(req, ZMQ_IDENTITY, id, static_cast<size_t>(id.size()));
-    qDebug() << "Client ID " << id;
 
     //  Configure socket to not wait at close time
     int linger = 0;

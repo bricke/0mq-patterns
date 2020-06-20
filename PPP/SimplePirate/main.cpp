@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     parser.setApplicationDescription("SimplePirate");
     parser.addHelpOption();
     parser.addPositionalArgument("objectType",
-                                 QCoreApplication::translate("main", "server, client or queue"));
+           QCoreApplication::translate("main", "server, client or queue"));
 
     parser.process(a);
 
@@ -36,9 +36,13 @@ int main(int argc, char *argv[])
         client = new Client();
         int max_msg = 10;
         while (max_msg > 0) {
-            qDebug() << client->sendRequest("tcp://localhost:5555", "Hello", 5);
-            --max_msg;
+            QString response =
+                    client->sendRequest("tcp://localhost:5555", "Hello", 5);
+            if (!response.isEmpty())
+                qDebug() << "Client: Hello" << response;
+            max_msg--;
         }
+        qDebug() << "Client Terminated";
     }
 
     if (args.at(0).compare("queue") == 0) {

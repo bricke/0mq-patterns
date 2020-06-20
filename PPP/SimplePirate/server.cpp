@@ -8,9 +8,10 @@ Server::Server(QObject *parent) : QObject(parent)
     //Using new context, inproc not available
     context = zmq_ctx_new();
     req = zmq_socket(context, ZMQ_REQ);
-    srand((qulonglong)req);
-    identity = QStringLiteral("Worker-%1").arg(rand()).toLocal8Bit();
-    zmq_setsockopt(req, ZMQ_IDENTITY, identity, static_cast<size_t>(identity.size()));
+    qsrand((qulonglong)req);
+    identity = QStringLiteral("Worker-%1").arg(qrand()).toLocal8Bit();
+    zmq_setsockopt(req, ZMQ_IDENTITY, identity,
+                   static_cast<size_t>(identity.size()));
     qDebug() << "server init " << identity;
     items[0] = {req, 0, ZMQ_POLLIN, 0};
 }
@@ -31,11 +32,11 @@ void Server::listen(const QString address)
         return;
     }
 
-    zmq_send (req, "", 1, ZMQ_SNDMORE);
+    zmq_send (req, "noAddr", 6, ZMQ_SNDMORE);
     zmq_send(req, "READY", 5, 0);
 
-    srand((qulonglong) req);
-    int sHappens = rand();
+    qsrand((qulonglong) req);
+    int sHappens = qrand() % 100;
 
     forever{
         //Blocking
@@ -47,18 +48,21 @@ void Server::listen(const QString address)
             tmp.append("-Client");
             QByteArray address(tmp.toLatin1());
 
-            sHappens = rand();
+            sHappens = qrand() % 100;
 
-            if (sHappens % 5 == 0) {
-                usleep(3 * 1000 * 1000); // sleep 3 seconds before sending a response
-                zmq_send (req, address.data(), static_cast<size_t>(address.size()), ZMQ_SNDMORE);
+            if (sHappens % 10 == 0) {
+                // sleep 2 seconds before sending a response
+                usleep(2 * 1000 * 1000);
+                zmq_send (req, address.data(),
+                          static_cast<size_t>(address.size()), ZMQ_SNDMORE);
                 zmq_send (req, "World...busy!", 13, 0);
             } else {
-                if (sHappens % 15 == 0){
+                if (sHappens % 13 == 0){
                     qDebug() << identity <<"CRASH";
                     break;
                 } else {
-                    zmq_send (req, address.data(), static_cast<size_t>(address.size()), ZMQ_SNDMORE);
+                    zmq_send (req, address.data(),
+                              static_cast<size_t>(address.size()), ZMQ_SNDMORE);
                     zmq_send (req, "World!", 6, 0);
                 }
             }
