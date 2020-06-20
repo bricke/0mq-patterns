@@ -33,21 +33,37 @@ void Queue::start()
     forever {
         //If I have no available workers
         //poll backend only
-        if (workerQueue.size() == 0) {
+        if (workerQueue.size() == 0)
             zmq_poll(items, 1, -1);
-        }
-        else {
+        else
             zmq_poll(items, 2, -1);
-        }
 
         // Message returning from a worker
         if (items [0].revents & ZMQ_POLLIN) {
+
             //Reading the worker response
-            QByteArray workerAddress = readOne(backend);
-            QByteArray empty = readOne(backend);
-            Q_UNUSED(empty);
-            QByteArray clientAddress = readOne(backend);
-            QByteArray message = readOne(backend);
+            QList<QByteArray> response = readAll(backend);
+
+            QByteArray workerAddress;
+            QByteArray clientAddress;
+            QByteArray message;
+
+            switch (response.size())
+            {
+            case 2:
+                workerAddress = response.at(0);
+                message = response.at(1);
+                break;
+            case 4:
+                workerAddress = response.at(0);
+                clientAddress = response.at(2);
+                message = response.at(3);
+                break;
+            default:
+                workerAddress = response.at(0);
+                qDebug() << "Malformed package - server back in queue";
+                break;
+            }
 
             workerQueue.enqueue(workerAddress);
             qDebug() << "\tWorker" << workerAddress
@@ -55,7 +71,7 @@ void Queue::start()
                      << workerQueue.size();
 
             //  Return reply to client if it's not a READY
-            if (QString(message).compare("READY", Qt::CaseInsensitive) != 0) {
+            if (!message.isEmpty() && QString(message).compare("READY", Qt::CaseInsensitive) != 0) {
                 zmq_send(frontend, clientAddress.data(),
                          static_cast<size_t>(clientAddress.size()), ZMQ_SNDMORE);
                 zmq_send(frontend, NULL, 0, ZMQ_SNDMORE);
@@ -68,21 +84,31 @@ void Queue::start()
 
         //Message coming from a client
         if (items [1].revents & ZMQ_POLLIN) {
-            QByteArray address = readOne(frontend);
-            QByteArray empty = readOne(frontend);
-            Q_UNUSED(empty);
-            QByteArray message = readOne(frontend);
+            QList<QByteArray> request = readAll(frontend);
+            QByteArray address;
+            QByteArray message;
+            switch(request.size()) {
+            case 3:
+                address = request.first();
+                message = request.last();
+                break;
+            default:
+                qDebug() << "Request malformed - ignoring";
+                break;
+            }
 
             //Forwarding message to backend
-            QByteArray to = workerQueue.dequeue();
-            zmq_send(backend, to.data(),
-                     static_cast<size_t>(to.size()), ZMQ_SNDMORE);
-            zmq_send(backend, NULL, 0, ZMQ_SNDMORE);
-            zmq_send(backend, address.data(),
-                     static_cast<size_t>(to.size()), ZMQ_SNDMORE);
-            zmq_send(backend, message.data(),
-                     static_cast<size_t>(message.size()), 0);
-            qDebug() << "\tForwarding"<< address << "to" << to;
+            if (!message.isEmpty()) {
+                QByteArray to = workerQueue.dequeue();
+                zmq_send(backend, to.data(),
+                         static_cast<size_t>(to.size()), ZMQ_SNDMORE);
+                zmq_send(backend, NULL, 0, ZMQ_SNDMORE);
+                zmq_send(backend, address.data(),
+                         static_cast<size_t>(to.size()), ZMQ_SNDMORE);
+                zmq_send(backend, message.data(),
+                         static_cast<size_t>(message.size()), 0);
+                qDebug() << "\tForwarding"<< address << "to" << to;
+            }
         }
     }
 }
@@ -94,9 +120,9 @@ Queue::~Queue()
     zmq_ctx_destroy(context);
 }
 
-QByteArray Queue::readAll(void *socket)
+QList<QByteArray> Queue::readAll(void *socket)
 {
-    QByteArray ret;
+    QList<QByteArray> ret;
     forever {
         //  Process all parts of the message
         zmq_msg_t message;
@@ -104,7 +130,7 @@ QByteArray Queue::readAll(void *socket)
         int size = zmq_msg_recv(&message, socket, 0);
 
         //  Dump the message byte array
-        ret.append(static_cast<char*>(zmq_msg_data(&message)), size);
+        ret.append(QByteArray(static_cast<char*>(zmq_msg_data(&message)), size));
         zmq_msg_close(&message);
 
         //  Multipart detection
@@ -115,16 +141,6 @@ QByteArray Queue::readAll(void *socket)
             break;
         }
     }
-    return ret;
-}
-
-QByteArray Queue::readOne(void *socket)
-{
-    zmq_msg_t message;
-    zmq_msg_init(&message);
-    int size = zmq_msg_recv(&message, socket, 0);
-    QByteArray ret(static_cast<char*>(zmq_msg_data(&message)), size);
-    zmq_msg_close(&message);
     return ret;
 }
 

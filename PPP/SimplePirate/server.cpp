@@ -57,7 +57,7 @@ void Server::listen(const QString address)
                           static_cast<size_t>(address.size()), ZMQ_SNDMORE);
                 zmq_send (req, "World...busy!", 13, 0);
             } else {
-                if (sHappens % 13 == 0){
+                if (sHappens % 19 == 0){
                     qDebug() << identity <<"CRASH";
                     break;
                 } else {

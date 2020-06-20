@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QQueue>
+#include <QList>
+#include <QByteArray>
 #include <zmq.h>
 
 class Queue : public QObject
@@ -24,8 +26,7 @@ private:
     void *backend;
     zmq_pollitem_t items[2];
     QQueue<QByteArray> workerQueue;
-    QByteArray readAll(void *socket);
-    QByteArray readOne(void *socket);
+    QList<QByteArray> readAll(void *socket);
 };
 
 #endif // QUEUE_H
