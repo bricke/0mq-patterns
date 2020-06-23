@@ -25,7 +25,8 @@ QByteArray Client::sendRequest(const QString server,
     zmq_setsockopt(req, ZMQ_IDENTITY, id, static_cast<size_t>(id.size()));
 
     //  Configure socket to not wait at close time
-    zmq_setsockopt(req, ZMQ_LINGER, 0, 1);
+    int linger = 0;
+    zmq_setsockopt(req, ZMQ_LINGER, &linger, sizeof (linger));
     items[0] = {req, 0, ZMQ_POLLIN, 0};
 
     int rc = zmq_connect(req, server.toLatin1().data());

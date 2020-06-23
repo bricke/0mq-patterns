@@ -42,9 +42,9 @@ QByteArray Client::sendRequest(const QString server, const QByteArray data, int 
     return ret;
 }
 
-//Blocking!
 QByteArray Client::poll(int timeout)
 {
+    //Blocking!
     zmq_poll(items, sizeof(items)/sizeof(zmq_pollitem_t), timeout);
     if (items[0].revents & ZMQ_POLLIN) {
         QByteArray content = readAll(req);

@@ -12,6 +12,7 @@ Server::Server(QObject *parent) : QObject(parent)
     identity = QStringLiteral("Worker-%1").arg(qrand()).toLocal8Bit();
     zmq_setsockopt(req, ZMQ_IDENTITY, identity,
                    static_cast<size_t>(identity.size()));
+    zmq_setsockopt (req, ZMQ_LINGER, 0, 1);
     qDebug() << "server init " << identity;
     items[0] = {req, 0, ZMQ_POLLIN, 0};
 }
@@ -32,7 +33,6 @@ void Server::listen(const QString address)
         return;
     }
 
-//    zmq_send (req, "noAddr", 6, ZMQ_SNDMORE);
     zmq_send(req, "READY", 5, 0);
 
     qsrand((qulonglong) req);
