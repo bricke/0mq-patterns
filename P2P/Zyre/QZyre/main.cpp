@@ -7,13 +7,13 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QZyre nodeOne("Node1");
-    nodeOne.setGossipEndpoint("tcp://127.0.0.1:123456");
-    nodeOne.gossipBindTo("tcp://127.0.0.1:55555");
+    nodeOne.setUDPBeaconingPort(123456);
+    nodeOne.setUDPInterface("*");
     nodeOne.start();
 
     QZyre nodeTwo("Node2");
-    nodeTwo.setGossipEndpoint("tcp://127.0.0.1:456798");
-    nodeTwo.gossipConnect("tcp://127.0.0.1:55555");
+    nodeTwo.setUDPBeaconingPort(123456);
+    nodeTwo.setUDPInterface("*");
     nodeTwo.start();
 
     qDebug() << "Node1 =" << nodeOne.getUUID();

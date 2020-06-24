@@ -40,19 +40,15 @@ QString QZyre::getUUID() const
     return QString(zyre_uuid(m_node));
 }
 
-void QZyre::setGossipEndpoint(const QString endpoint) const
+void QZyre::setUDPBeaconingPort(const int port) const
 {
-    zyre_set_endpoint(m_node, endpoint.toLatin1().constData());
+    zyre_set_port(m_node, port);
 }
 
-void QZyre::gossipBindTo(const QString endpoint) const
+void QZyre::setUDPInterface(const QString &interface) const
 {
-    zyre_gossip_bind(m_node, endpoint.toLatin1().constData());
-}
+    zyre_set_interface(m_node, interface.toLatin1().constData());
 
-void QZyre::gossipConnect(const QString endpoint) const
-{
-    zyre_gossip_connect(m_node, endpoint.toLatin1().constData());
 }
 
 bool QZyre::join(const QString group)
@@ -79,8 +75,11 @@ void QZyre::listen()
 {
     zpoller_t *poller = zpoller_new (zyre_socket(m_node), NULL);
     zsock_t *which = (zsock_t *) zpoller_wait (poller, 1);
-    if (zpoller_expired(poller) || zpoller_terminated(poller))
+    if (zpoller_expired(poller) || zpoller_terminated(poller)) {
+        zpoller_destroy(&poller);
         return;
+    }
+
     if (which == zyre_socket(m_node)){
         zmsg_t *message = zyre_recv (m_node);
         char *command = zmsg_popstr(message);
@@ -145,6 +144,7 @@ void QZyre::listen()
     else {
         qDebug() << "Weird...";
     }
+    zpoller_destroy(&poller);
 }
 
 QZyre::Event QZyre::decodeEvent(QString eventName)

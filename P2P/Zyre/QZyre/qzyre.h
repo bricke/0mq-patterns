@@ -50,9 +50,8 @@ public:
 
     QString getUUID() const;
 
-    void setGossipEndpoint(const QString endpoint) const;
-    void gossipBindTo(const QString endpoint) const;
-    void gossipConnect(const QString endpoint) const;
+    void setUDPBeaconingPort(const int port) const;
+    void setUDPInterface(const QString &interface) const;
 
     bool join(const QString group);
     bool leave(const QString group);
