@@ -50,18 +50,20 @@ void Queue::start()
 
             switch (response.size())
             {
-            case 2:
+            case 3:
                 workerAddress = response.at(0);
-                message = response.at(1);
+                //empty at #1
+                message = response.at(2);
                 break;
             case 4:
                 workerAddress = response.at(0);
+                //empty at #1
                 clientAddress = response.at(2);
                 message = response.at(3);
                 break;
             default:
                 workerAddress = response.at(0);
-                qDebug() << "Malformed package - server back in queue";
+                qDebug() << "Malformed package - server back in queue" << response;
                 break;
             }
 
@@ -104,7 +106,7 @@ void Queue::start()
                          static_cast<size_t>(to.size()), ZMQ_SNDMORE);
                 zmq_send(backend, NULL, 0, ZMQ_SNDMORE);
                 zmq_send(backend, address.data(),
-                         static_cast<size_t>(to.size()), ZMQ_SNDMORE);
+                         static_cast<size_t>(address.size()), ZMQ_SNDMORE);
                 zmq_send(backend, message.data(),
                          static_cast<size_t>(message.size()), 0);
                 qDebug() << "\tForwarding"<< address << "to" << to;

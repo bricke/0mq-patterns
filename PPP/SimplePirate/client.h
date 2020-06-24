@@ -13,6 +13,7 @@ class Client : public QObject
 public:
     explicit Client(QObject *parent = nullptr);
     ~Client();
+    QString getId();
 
 signals:
 
@@ -24,6 +25,7 @@ private:
     void *req;
     QTimer pollTimer;
     zmq_pollitem_t items[1];
+    QByteArray id;
 
     QByteArray readAll(void* socket);
     QByteArray poll(int timeout);

@@ -6,12 +6,20 @@ Client::Client(QObject *parent) : QObject(parent)
 {
     //Using new context, inproc not available
     context = zmq_ctx_new();
+    qsrand((qulonglong)req);
+    id = QStringLiteral("Client-%1").arg((qrand()%100)).toLocal8Bit();
+
 }
 
 Client::~Client()
 {
     zmq_close (req);
     zmq_ctx_destroy(context);
+}
+
+QString Client::getId()
+{
+    return QString(id);
 }
 
 //Blocking with timeout!
@@ -21,7 +29,7 @@ QByteArray Client::sendRequest(const QString server,
 {
     req = zmq_socket(context, ZMQ_REQ);
     qsrand((qulonglong)req);
-    QByteArray id = QStringLiteral("%1-Client").arg(qrand()).toLocal8Bit();
+
     zmq_setsockopt(req, ZMQ_IDENTITY, id, static_cast<size_t>(id.size()));
 
     //  Configure socket to not wait at close time
@@ -41,6 +49,7 @@ QByteArray Client::sendRequest(const QString server,
     while (--retries != 0 && ret.isEmpty()) {
         ret = poll(1*1000);
     }
+
     zmq_disconnect(req, server.toLatin1().data());
     zmq_close (req);
     return ret;

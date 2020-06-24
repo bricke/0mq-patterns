@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
             QString response =
                     client->sendRequest("tcp://localhost:5555", "Hello", 5);
             if (!response.isEmpty())
-                qDebug() << "Client: Hello" << response;
+                qDebug() << client->getId() << ": Hello" << response;
             max_msg--;
         }
         qDebug() << "Client Terminated";

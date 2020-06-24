@@ -37,7 +37,7 @@ void Server::listen(const QString address)
             zmq_send (rep, "World", 5, 0);
         } else {
             if (QString(input).compare("What's up?", Qt::CaseInsensitive) == 0) {
-                usleep(3 * 1000 * 1000); // sleep 3 seconds before sending a response
+                usleep(5 * 1000 * 1000); // sleep 3 seconds before sending a response
                 zmq_send (rep, "Nothing, just busy!", 19, 0);
             } else {
                 qDebug() << "CRASH";

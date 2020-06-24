@@ -6,7 +6,7 @@ QZyre::QZyre(QString nodeName, QObject *parent) : QObject(parent)
 {
     m_node = zyre_new(nodeName.toLatin1());
     m_listenTimer.setInterval(0);
-    m_listenTimer.setSingleShot(false);
+    m_listenTimer.setSingleShot(true);
     m_listenTimer.start();
 #ifdef LOGEVENTS
     printAllEvents();
@@ -145,6 +145,7 @@ void QZyre::listen()
         qDebug() << "Weird...";
     }
     zpoller_destroy(&poller);
+    m_listenTimer.start();
 }
 
 QZyre::Event QZyre::decodeEvent(QString eventName)

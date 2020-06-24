@@ -9,11 +9,11 @@ Server::Server(QObject *parent) : QObject(parent)
     context = zmq_ctx_new();
     req = zmq_socket(context, ZMQ_REQ);
     qsrand((qulonglong)req);
-    identity = QStringLiteral("Worker-%1").arg(qrand()).toLocal8Bit();
+    identity = QStringLiteral("Worker-%1").arg(qrand()%100).toLocal8Bit();
     zmq_setsockopt(req, ZMQ_IDENTITY, identity,
                    static_cast<size_t>(identity.size()));
     zmq_setsockopt (req, ZMQ_LINGER, 0, 1);
-    qDebug() << "server init " << identity;
+    qDebug() << "Worker" << identity << "Started";
     items[0] = {req, 0, ZMQ_POLLIN, 0};
 }
 

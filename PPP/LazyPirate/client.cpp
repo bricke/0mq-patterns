@@ -20,8 +20,7 @@ QByteArray Client::sendRequest(const QString server, const QByteArray data, int 
     req = zmq_socket(context, ZMQ_REQ);
 
     //  Configure socket to not wait at close time
-    int linger = 0;
-    zmq_setsockopt(req, ZMQ_LINGER, &linger, sizeof (linger));
+    zmq_setsockopt(req, ZMQ_LINGER, 0, 1);
     items[0] = {req, 0, ZMQ_POLLIN, 0};
 
     int rc = zmq_connect(req, server.toLatin1().data());
@@ -35,8 +34,9 @@ QByteArray Client::sendRequest(const QString server, const QByteArray data, int 
     QByteArray ret;
 
     while (--retries != 0 && ret.isEmpty()) {
-        ret = poll(1*1000);
+        ret = poll(2*1000);
     }
+
     zmq_disconnect(req, server.toLatin1().data());
     zmq_close (req);
     return ret;
